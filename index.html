@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Hogwarts Birthday Quiz — per-page backgrounds</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    /* Reset / layout */
+    html,body { height:100%; margin:0; padding:0; font-family: Georgia, serif; background:#111; }
+    body { display:flex; align-items:center; justify-content:center; padding:24px; color:#2b1600; }
+
+    /* .page fills a large viewport area and has its own background-image */
+    .page {
+      display:none;
+      position:relative;
+      width:100%;
+      max-width:920px;
+      min-height:80vh;            /* ensure the element is tall enough for background to show */
+      border-radius:12px;
+      overflow:auto;
+      box-shadow:0 20px 50px rgba(0,0,0,.45);
+      background-position:center;
+      background-size:cover;      /* scale to cover the element (trusted approach). */ 
+      background-repeat:no-repeat;
+    }
+    .active { display:block; }
+
+    /* translucent content card on top for readability */
+    .card {
+      width:420px;
+      max-width:88%;
+      margin: 30px auto;
+      background: rgba(255,250,240,0.94);
+      border: 3px solid #6b4625;
+      border-radius:10px;
+      padding:22px;
+      text-align:center;
+      box-shadow:0 6px 20px rgba(0,0,0,0.35);
+    }
+
+    h2 { margin:6px 0 12px 0; font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif; }
+    p { margin:8px 0; line-height:1.38; color:#3b2716; }
+    .small { font-size:13px; color:#5b4430; }
+
+    .btn {
+      display:inline-block;
+      padding:10px 18px;
+      margin:10px 6px;
+      background: linear-gradient(#d2a14a,#b67f28);
+      color:#2b1600;
+      border-radius:6px;
+      border:2px solid #7a4f22;
+      cursor:pointer;
+      font-weight:700;
+      box-shadow:0 3px 0 #5d3e20;
+    }
+    .btn:active { transform:translateY(1px); box-shadow:none; }
+
+    input[type="text"], input[type="date"] {
+      width:86%; padding:9px; margin-top:8px;
+      border:2px solid #7a4f22; border-radius:6px; font-size:15px;
+      background: rgba(255,255,255,0.98);
+    }
+
+    .dessert-row { display:flex; justify-content:center; gap:12px; margin-top:8px; flex-wrap:wrap; }
+    .dessert-img {
+      width:96px; height:96px; object-fit:cover;
+      border:3px solid #a97434; border-radius:10px; cursor:pointer;
+      box-shadow:0 6px 12px rgba(0,0,0,0.25);
+      transition: transform .15s ease;
+    }
+    .dessert-img:hover { transform: translateY(-6px) scale(1.04); }
+
+    .age-boxes { display:flex; justify-content:space-between; gap:8px; margin-top:10px; }
+    .box { flex:1; background: rgba(255,255,255,0.95); padding:12px; border-radius:8px; border:2px solid #7a4f22; }
+    .box strong{ display:block; font-size:20px; color:#2b1600; }
+
+    .letter { padding-top:20px; text-align:left; display:block; }
+
+    /* Per-page background images (use ./ to be explicit relative to the HTML file) */
+    #page1 { background: url('./page1-bg.jpg') center/cover no-repeat; }
+    #page2 { background: url('./page2-bg.jpg') center/cover no-repeat; }
+    #page3 { background: url('./page3-bg.jpg') center/cover no-repeat; }
+    #page4 { background: url('./page4-bg.jpg') center/cover no-repeat; }
+    #page5 { background: url('./page5-bg.jpg') center/cover no-repeat; }
+    #page6 { background: url('./page6-bg.jpg') center/cover no-repeat; }
+
+    /* small screens */
+    @media (max-width:520px) {
+      .page { min-height:88vh; }
+      .card { margin:18px auto; padding:16px; }
+    }
+
+    /* small debug badge shown when a background fails (JS will add class .bg-missing to the page) */
+    .bg-warning {
+      background: linear-gradient(90deg, rgba(255,200,200,0.95), rgba(255,240,240,0.95));
+      border-color: #a00 !important;
+    }
+    .bg-warning .card::after {
+      content: "⚠ Background image not found (check filename/path)";
+      display:block;
+      margin-top:10px;
+      color:#a00;
+      font-weight:700;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE 1 -->
+  <div id="page1" class="page active">
+    <div class="card">
+      <h2>Would you like to take a magical quiz?</h2>
+      <p class="small">A Hogwarts-themed surprise awaits at the end 🎁</p>
+      <button class="btn" onclick="goTo(2)">Absolutely — let’s go!</button>
+    </div>
+  </div>
+
+  <!-- PAGE 2: favorite color -->
+  <div id="page2" class="page">
+    <div class="card">
+      <h2>Which color would you wear to a Yule Ball — driftwood silver, potion green, or midnight black?</h2>
+      <input type="text" id="favColor" placeholder="Type your magical color here" />
+      <div style="margin-top:12px;">
+        <button class="btn" onclick="submitColor()">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 3: dessert -->
+  <div id="page3" class="page">
+    <div class="card">
+      <h2>Which magical treat would you pick from Honeydukes?</h2>
+      <div class="dessert-row">
+        <img src="./butterbeer-gelato.jpg" class="dessert-img" alt="Butterbeer Gelato" onclick="chooseDessert('Butterbeer Gelato')">
+        <img src="./choc-cauldron-cake.jpg" class="dessert-img" alt="Chocolate Cauldron Cake" onclick="chooseDessert('Chocolate Cauldron Cake')">
+        <img src="./bertie-cookies.jpg" class="dessert-img" alt="Every-Flavour Cookies" onclick="chooseDessert(\"Bertie Bott's Every-Flavour Cookies\")">
+      </div>
+      <p class="small">(Tap a picture to choose.)</p>
+    </div>
+  </div>
+
+  <!-- PAGE 4: birth date -->
+  <div id="page4" class="page">
+    <div class="card">
+      <h2>Enter the day your magic first appeared…</h2>
+      <input type="date" id="birthDate" />
+      <div style="margin-top:12px;">
+        <button class="btn" onclick="submitDob()">Reveal my years of enchantment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 5: birthday + age -->
+  <div id="page5" class="page">
+    <div class="card">
+      <h2>A Very Happy Birthday, young witch/wizard!</h2>
+      <img src="./birthday-cake.png" alt="Birthday Cake" style="width:150px;margin:12px auto;display:block;border-radius:10px;">
+      <p>Your years of enchantment so far:</p>
+      <div class="age-boxes">
+        <div class="box"><strong id="yearsBox">0</strong> Years</div>
+        <div class="box"><strong id="monthsBox">0</strong> Months</div>
+        <div class="box"><strong id="daysBox">0</strong> Days</div>
+      </div>
+      <div style="margin-top:14px;">
+        <button class="btn" onclick="goTo(6)">Reveal your acceptance letter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 6: letter -->
+  <div id="page6" class="page">
+    <div class="card">
+      <h2>Your Hogwarts Acceptance Letter... of Friendship</h2>
+      <div class="letter">
+        <p><strong>Dear Anami,</strong></p>
+        <p>Happy Birthday! Another chapter opens in your magical story. Thank you for your loyalty, your laughter, and for being the friend who lights up even the darkest Room of Requirement.</p>
+        <p>Even when I cause a little mischief, you stand by me. You teach me (and maybe tolerate my chaos) — especially when we fumble through math spells together (😂).</p>
+        <p>No matter how busy life becomes, I’ll always be here — waiting for your owl (or phone call). Don’t let your husband make me jealous and forget your forever friend! 😂</p>
+        <p>With all my love and a flick of the wand,</p>
+        <p><em>Forever your friend</em></p>
+      </div>
+      <p class="small" style="margin-top:10px;">(Edit the letter text in this file to personalize.)</p>
+    </div>
+  </div>
+
+<script>
+  /* Navigation helpers */
+  function showPage(n) {
+    for (let i=1;i<=6;i++) document.getElementById('page'+i).classList.remove('active');
+    document.getElementById('page'+n).classList.add('active');
+    window.scrollTo(0,0);
+  }
+  function goTo(n){ showPage(n); }
+
+  /* Quiz flow */
+  function submitColor(){
+    const val = document.getElementById('favColor').value.trim();
+    if(!val){ alert('Please type your magical color.'); return; }
+    alert('A fine choice — ' + val + '!');
+    goTo(3);
+  }
+  function chooseDessert(choice){
+    alert(choice + ' — delicious and enchanted!');
+    goTo(4);
+  }
+  function submitDob(){
+    const dob = document.getElementById('birthDate').value;
+    if(!dob){ alert('Please enter your birth date.'); return; }
+    showAge(dob);
+    goTo(5);
+  }
+
+  /* Age calculation (handles leap years) */
+  function exactAge(birthdate){
+    let start = new Date(new Date(birthdate).toISOString().substr(0,10));
+    const end = new Date();
+    if(start> end) [start,end] = [end,start];
+    const startYear = start.getFullYear();
+    const feb = ((startYear%4===0 && startYear%100!==0) || startYear%400===0)?29:28;
+    const mdays = [31,feb,31,30,31,30,31,31,30,31,30,31];
+    let y = end.getFullYear()-start.getFullYear();
+    let m = end.getMonth()-start.getMonth();
+    let d = end.getDate()-start.getDate();
+    if(m<0){ y--; m+=12; }
+    if(d<0){
+      if(m>0) m--; else { y--; m=11; }
+      d += mdays[(start.getMonth()+12)%12];
+    }
+    return {years:y, months:m, days:d};
+  }
+  function showAge(dob){
+    const a = exactAge(dob);
+    document.getElementById('yearsBox').innerText = a.years;
+    document.getElementById('monthsBox').innerText = a.months;
+    document.getElementById('daysBox').innerText = a.days;
+  }
+
+  /* === Background image health check (helps debug missing files) ===
+     This code checks each page's background-image URL by trying to load it as a normal Image().
+     If the image fails to load, we add a visible warning class to that page (.bg-warning)
+     and print a message to console. This makes missing-file problems obvious.
+  */
+  window.addEventListener('DOMContentLoaded', () => {
+    const pages = [
+      { id: 'page1', url: './page1-bg.jpg' },
+      { id: 'page2', url: './page2-bg.jpg' },
+      { id: 'page3', url: './page3-bg.jpg' },
+      { id: 'page4', url: './page4-bg.jpg' },
+      { id: 'page5', url: './page5-bg.jpg' },
+      { id: 'page6', url: './page6-bg.jpg' }
+    ];
+
+    pages.forEach(p => {
+      const img = new Image();
+      img.onload = () => console.log('Background loaded:', p.url);
+      img.onerror = () => {
+        console.error('Background FAILED to load:', p.url);
+        // visually mark the page so you see it immediately
+        document.getElementById(p.id).classList.add('bg-warning');
+      };
+      img.src = p.url;
+    });
+
+    // ensure we start on page1
+    showPage(1);
+  });
+</script>
+</body>
+</html>
